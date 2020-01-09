@@ -1,8 +1,8 @@
 import React from 'react'
-import useFormExample from '../../hooks/example/useFormExample'
-import { FormProvider } from '../../contexts/FormContext'
-import MyTextField from '../common/MyTextField'
-import { composeValidators, required } from '../../utils/formValidate'
+import useFormExample from 'hooks/example/useFormExample'
+import { FormProvider } from 'contexts/FormContext'
+import MyTextField from 'components/common/MyTextField'
+import { composeValidators, required } from 'utils/formValidate'
 
 let FormExampleView = ({ state, form, form2 }) => {
     return (

@@ -1,16 +1,12 @@
 import React from 'react'
-import useMyTextField from '../../hooks/common/useMyTextField'
+import useMyTextField from 'hooks/common/useMyTextField'
+import TextField from '@material-ui/core/TextField'
 
 const MyTextFieldView = ({ label, field }) => {
-    return (
-        <div>
-            <label>{label}</label>
-            <input {...field.input} />
-            {field.meta.error && field.meta.touched && (
-                <label>{field.meta.error}</label>
-            )}
-        </div>
-    )
+    const error = !!(field.meta.touched && field.meta.error)
+    const helperText = field.meta.touched ? field.meta.error : undefined
+
+    return <TextField {...{ label, error, helperText }} {...field.input} />
 }
 
 const MyTextField = ({ name, form, validate, ...other }) => {

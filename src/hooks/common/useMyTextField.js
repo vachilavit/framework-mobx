@@ -1,5 +1,5 @@
 import { useField } from 'react-final-form-hooks'
-import { useFormConsumer } from '../../contexts/FormContext'
+import { useFormConsumer } from 'contexts/FormContext'
 
 const useMyTextField = ({ name, validate }) => {
     const formConsumer = useFormConsumer()
