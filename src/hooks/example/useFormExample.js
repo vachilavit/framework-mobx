@@ -14,7 +14,7 @@ const useFormExample = () => {
         onSubmit,
         initialValues: {
             test: undefined,
-            test2: 'test2',
+            test2: 1,
         },
         subscription: { submitFailed: true },
     })
