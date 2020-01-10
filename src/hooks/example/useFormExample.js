@@ -28,12 +28,12 @@ const useFormExample = () => {
         subscription: { submitFailed: true },
     })
 
-    //ไม่ render ใหม่เมื่อเปลี่ยน (ไว้สำหรับมี event อะไรสักอย่างแล้วต้องการค่า)
-    console.log(form.form.getFieldState('test')?.value)
+    // //ไม่ render ใหม่เมื่อเปลี่ยน (ไว้สำหรับมี event อะไรสักอย่างแล้วต้องการค่า)
+    // console.log(form.form.getFieldState('test')?.value)
 
-    //render ใหม่เมื่อเปลี่ยน (ไว้สำหรับตรวจจับ event onChange ของ field นี้)
-    const fieldTest = useField('test', form.form, undefined, { value: true })
-    console.log(fieldTest.input.value)
+    // //render ใหม่เมื่อเปลี่ยน (ไว้สำหรับตรวจจับ event onChange ของ field นี้)
+    // const fieldTest = useField('test', form.form, undefined, { value: true })
+    // console.log(fieldTest.input.value)
 
     return { state, form, form2 }
 }

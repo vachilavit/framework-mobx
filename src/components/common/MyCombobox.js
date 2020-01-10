@@ -14,14 +14,15 @@ import useMyCombobox from 'hooks/common/useMyCombobox'
 const useStyles = makeStyles(theme => ({
     root: { width: '100%', height: '100%' },
     searchInput: { padding: theme.spacing(1) },
-    highlighted: { fontWeight: 'bold' },
+    hoverItem: { backgroundColor: theme.palette.action.hover },
+    selectedItem: { backgroundColor: theme.palette.action.selected },
+    selectedItemText: { fontWeight: 'bold' },
     otherMenu: { textAlign: 'center', padding: theme.spacing(1) },
 }))
 
 const MyComboboxView = ({
     combobox,
     inputItems,
-    inputHighlightedIndex,
     createTextFromItem,
 
     uniqueKey,
@@ -37,14 +38,20 @@ const MyComboboxView = ({
     const inputItemRef = useRef()
     const textItem = createTextFromItem(combobox.selectedItem, searchKeys)
     return (
-        <div {...combobox.getComboboxProps()}>
+        <div {...combobox.getComboboxProps()} className={classes.root}>
             <TextField
                 fullWidth
                 multiline
                 ref={anchorEl}
-                value={textItem}
                 InputLabelProps={combobox.getLabelProps({ shrink: true })}
                 InputProps={{
+                    //กัน error
+                    ...combobox.getInputProps(),
+                    value: textItem,
+                    onChange: () => {},
+                    onFocus: () => {},
+                    onBlur: () => {},
+
                     readOnly: true,
                     endAdornment: (
                         <InputAdornment
@@ -62,63 +69,75 @@ const MyComboboxView = ({
                     event.preventDefault()
                     combobox.setInputValue('')
                     combobox.openMenu()
-                    setImmediate(() => {
-                        inputItemRef.current.focus()
-                    })
                 }}
             />
 
             <Popover
                 open={combobox.isOpen}
-                keepMounted
                 anchorEl={anchorEl.current}
                 onClose={() => {
                     combobox.closeMenu()
                 }}
             >
-                <Paper square>
-                    <div {...(combobox.isOpen ? combobox.getMenuProps({}, { suppressRefError: true }) : {})}>
-                        <TextField
-                            fullWidth
-                            multiline
-                            inputRef={inputItemRef}
-                            placeholder={textItem || placeholder}
-                            InputProps={combobox.getInputProps()}
-                            {...{ rowsMax }}
-                        />
+                <Paper square {...(combobox.isOpen ? combobox.getMenuProps({}, { suppressRefError: true }) : {})}>
+                    <TextField
+                        autoFocus
+                        fullWidth
+                        multiline
+                        inputRef={inputItemRef}
+                        placeholder={textItem || placeholder}
+                        InputProps={{
+                            ...combobox.getInputProps(),
 
-                        <div
-                            onMouseDown={event => {
-                                event.preventDefault()
+                            //กัน error
+                            onBlur: () => {},
+                        }}
+                        className={classes.searchInput}
+                        {...{ rowsMax }}
+                    />
+
+                    <div
+                        onMouseDown={event => {
+                            event.preventDefault()
+                        }}
+                    >
+                        <List height={300} width={300} itemCount={inputItems.length} itemSize={48}>
+                            {({ index, style }) => {
+                                const item = inputItems[index]
+                                const isHoverItem = combobox.highlightedIndex === index
+                                const beSelectedItem = item[uniqueKey] === combobox.selectedItem?.[uniqueKey]
+                                return (
+                                    <ListItem
+                                        key={`${item[uniqueKey]}${index}`}
+                                        className={clsx({
+                                            [classes.hoverItem]: isHoverItem,
+                                            [classes.selectedItem]: beSelectedItem && !isHoverItem,
+                                        })}
+                                        style={style}
+                                        {...combobox.getItemProps({
+                                            index,
+                                            // item,
+                                        })}
+                                        onClick={event => {
+                                            // setTimeout(() => {
+                                            combobox.selectItem(item)
+                                            // }, 0)
+                                            combobox.closeMenu()
+                                        }}
+                                    >
+                                        <ListItemText
+                                            primary={createTextFromItem(item, searchKeys)}
+                                            // classes={{
+                                            //     primary: clsx({
+                                            //         [classes.selectedItemText]:
+                                            //             beSelectedItem
+                                            //     }),
+                                            // }}
+                                        />
+                                    </ListItem>
+                                )
                             }}
-                        >
-                            <List height={100} width={300} itemCount={inputItems.length} itemSize={50}>
-                                {({ index, style }) => {
-                                    const item = inputItems[index]
-                                    return (
-                                        <ListItem
-                                            key={`${item[uniqueKey]}${index}`}
-                                            selected={combobox.highlightedIndex === index}
-                                            style={style}
-                                            {...combobox.getItemProps({
-                                                index,
-                                                item,
-                                            })}
-                                        >
-                                            <ListItemText
-                                                primary={createTextFromItem(item, searchKeys)}
-                                                classes={{
-                                                    primary: clsx({
-                                                        [classes.highlighted]:
-                                                            item[uniqueKey] === combobox.selectedItem?.[uniqueKey],
-                                                    }),
-                                                }}
-                                            />
-                                        </ListItem>
-                                    )
-                                }}
-                            </List>
-                        </div>
+                        </List>
                     </div>
                 </Paper>
             </Popover>
