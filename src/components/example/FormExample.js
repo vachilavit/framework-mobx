@@ -8,7 +8,7 @@ import { composeValidators, required } from 'utils/formValidate'
 let FormExampleView = ({ state, form, form2 }) => {
     return (
         <FormProvider form={form.form}>
-            <div>
+            <div style={{ width: 300 }}>
                 <MyTextField name='test' label='test' validate={composeValidators(required)} />
                 <MyCombobox
                     name='test2'

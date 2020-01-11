@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { FixedSizeList as List } from 'react-window'
+import { List, CellMeasurer, CellMeasurerCache } from 'react-virtualized'
 import clsx from 'clsx'
 import { makeStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
@@ -10,6 +10,14 @@ import ListItemText from '@material-ui/core/ListItemText'
 import Popover from '@material-ui/core/Popover'
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown'
 import useMyCombobox from 'hooks/common/useMyCombobox'
+import useResizeObserver from 'hooks/common/useResizeObserver'
+import usePrevious from 'hooks/common/usePrevious'
+
+const rowHeight = 48
+const cache = new CellMeasurerCache({
+    defaultHeight: rowHeight,
+    fixedWidth: true,
+})
 
 const useStyles = makeStyles(theme => ({
     root: { width: '100%', height: '100%' },
@@ -21,8 +29,11 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const MyComboboxView = ({
-    combobox,
     inputItems,
+    // listRef,
+    scrollIndex,
+    combobox,
+    onKeyDownInput,
     createTextFromItem,
 
     uniqueKey,
@@ -32,11 +43,26 @@ const MyComboboxView = ({
     placeholder,
     rowsMax = 10,
 }) => {
+    cache.clearAll()
+
     const classes = useStyles()
     const anchorEl = useRef()
     const inputRef = useRef()
     const inputItemRef = useRef()
+
+    const { width: anchorElWidth } = useResizeObserver(anchorEl)
+    const widthOfMenu = Math.max(anchorElWidth || 0, 300)
+
+    const previousIsOpen = usePrevious(combobox.isOpen)
+    const previousScrollIndex = usePrevious(scrollIndex)
+
     const textItem = createTextFromItem(combobox.selectedItem, searchKeys)
+
+    let scrollToAlignment = 'auto'
+    if (previousIsOpen !== combobox.isOpen && combobox.isOpen) {
+        scrollToAlignment = 'start'
+    }
+
     return (
         <div {...combobox.getComboboxProps()} className={classes.root}>
             <TextField
@@ -45,13 +71,11 @@ const MyComboboxView = ({
                 ref={anchorEl}
                 InputLabelProps={combobox.getLabelProps({ shrink: true })}
                 InputProps={{
-                    //กัน error
-                    ...combobox.getInputProps(),
-                    value: textItem,
-                    onChange: () => {},
-                    onFocus: () => {},
-                    onBlur: () => {},
-
+                    ...combobox.getInputProps(), //กัน error
+                    value: textItem, //กัน error
+                    onChange: () => {}, //กัน error
+                    onFocus: () => {}, //กัน error
+                    onBlur: () => {}, //กัน error
                     readOnly: true,
                     endAdornment: (
                         <InputAdornment
@@ -64,7 +88,7 @@ const MyComboboxView = ({
                         </InputAdornment>
                     ),
                 }}
-                {...{ label, placeholder, rowsMax }}
+                {...{ inputRef, label, placeholder, rowsMax }}
                 onClick={event => {
                     event.preventDefault()
                     combobox.setInputValue('')
@@ -88,9 +112,8 @@ const MyComboboxView = ({
                         placeholder={textItem || placeholder}
                         InputProps={{
                             ...combobox.getInputProps(),
-
-                            //กัน error
-                            onBlur: () => {},
+                            onKeyDown: onKeyDownInput,
+                            onBlur: () => {}, //กัน error
                         }}
                         className={classes.searchInput}
                         {...{ rowsMax }}
@@ -101,7 +124,13 @@ const MyComboboxView = ({
                             event.preventDefault()
                         }}
                     >
-                        <List height={300} width={300} itemCount={inputItems.length} itemSize={48}>
+                        {/* <List
+                            ref={listRef}
+                            height={300}
+                            width={widthOfMenu}
+                            itemCount={inputItems.length}
+                            itemSize={48}
+                        >
                             {({ index, style }) => {
                                 const item = inputItems[index]
                                 const isHoverItem = combobox.highlightedIndex === index
@@ -113,17 +142,13 @@ const MyComboboxView = ({
                                             [classes.hoverItem]: isHoverItem,
                                             [classes.selectedItem]: beSelectedItem && !isHoverItem,
                                         })}
-                                        style={style}
-                                        {...combobox.getItemProps({
-                                            index,
-                                            // item,
-                                        })}
+                                        {...combobox.getItemProps({ index })}
                                         onClick={event => {
-                                            // setTimeout(() => {
                                             combobox.selectItem(item)
-                                            // }, 0)
                                             combobox.closeMenu()
                                         }}
+                                        {...{ style }}
+                                        ref={() => {}} //กัน error
                                     >
                                         <ListItemText
                                             primary={createTextFromItem(item, searchKeys)}
@@ -137,7 +162,49 @@ const MyComboboxView = ({
                                     </ListItem>
                                 )
                             }}
-                        </List>
+                        </List> */}
+
+                        <List
+                            width={widthOfMenu}
+                            height={300}
+                            rowHeight={cache.rowHeight}
+                            rowCount={inputItems.length}
+                            scrollToAlignment={scrollToAlignment}
+                            scrollToIndex={previousScrollIndex !== scrollIndex ? scrollIndex : undefined}
+                            rowRenderer={({ key, index, parent, style }) => {
+                                const item = inputItems[index]
+                                const isHoverItem = combobox.highlightedIndex === index
+                                const beSelectedItem = item[uniqueKey] === combobox.selectedItem?.[uniqueKey]
+                                return (
+                                    <CellMeasurer cache={cache} key={key} parent={parent} rowIndex={index}>
+                                        <ListItem
+                                            key={`${item[uniqueKey]}${index}`}
+                                            className={clsx({
+                                                [classes.hoverItem]: isHoverItem,
+                                                [classes.selectedItem]: beSelectedItem && !isHoverItem,
+                                            })}
+                                            {...combobox.getItemProps({ index })}
+                                            onClick={event => {
+                                                combobox.closeMenu()
+                                                combobox.selectItem(item)
+                                            }}
+                                            {...{ style }}
+                                            ref={() => {}} //กัน error
+                                        >
+                                            <ListItemText
+                                                primary={createTextFromItem(item, searchKeys)}
+                                                // classes={{
+                                                //     primary: clsx({
+                                                //         [classes.selectedItemText]:
+                                                //             beSelectedItem
+                                                //     }),
+                                                // }}
+                                            />
+                                        </ListItem>
+                                    </CellMeasurer>
+                                )
+                            }}
+                        />
                     </div>
                 </Paper>
             </Popover>
