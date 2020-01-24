@@ -1,22 +1,22 @@
-import { useLocalStore } from 'mobx-react-lite'
+import { useRef } from 'react'
 import { useForm, useField } from 'react-final-form-hooks'
+import setFieldData from 'final-form-set-field-data'
 
 const useFormExample = () => {
-    const state = useLocalStore(() => ({
-        typeSubmit: null,
-    }))
+    const typeSubmitRef = useRef()
 
-    const onSubmit = values => {
-        console.log(state.typeSubmit, values)
+    const onSubmit = (values, { getFieldState }) => {
+        console.log(typeSubmitRef.current, values, getFieldState('test2').data)
     }
 
     const form = useForm({
         onSubmit,
         initialValues: {
             test: undefined,
-            test2: 1,
+            test2: 'AE',
         },
         subscription: { submitFailed: true },
+        mutators: { setFieldData },
     })
 
     const form2 = useForm({
@@ -35,7 +35,7 @@ const useFormExample = () => {
     // const fieldTest = useField('test', form.form, undefined, { value: true })
     // console.log(fieldTest.input.value)
 
-    return { state, form, form2 }
+    return { typeSubmitRef, form, form2 }
 }
 
 export default useFormExample

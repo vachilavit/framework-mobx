@@ -60,7 +60,7 @@ const MyComboboxView = ({
 
     let scrollToAlignment = 'auto'
     if (previousIsOpen !== combobox.isOpen && combobox.isOpen) {
-        scrollToAlignment = 'start'
+        scrollToAlignment = 'center'
     }
 
     return (
@@ -170,7 +170,13 @@ const MyComboboxView = ({
                             rowHeight={cache.rowHeight}
                             rowCount={inputItems.length}
                             scrollToAlignment={scrollToAlignment}
-                            scrollToIndex={previousScrollIndex !== scrollIndex ? scrollIndex : undefined}
+                            scrollToIndex={
+                                previousScrollIndex !== scrollIndex
+                                    ? scrollIndex
+                                    : previousIsOpen !== combobox.isOpen && combobox.isOpen
+                                    ? scrollIndex
+                                    : undefined
+                            }
                             rowRenderer={({ key, index, parent, style }) => {
                                 const item = inputItems[index]
                                 const isHoverItem = combobox.highlightedIndex === index
@@ -179,10 +185,11 @@ const MyComboboxView = ({
                                     <CellMeasurer cache={cache} key={key} parent={parent} rowIndex={index}>
                                         <ListItem
                                             key={`${item[uniqueKey]}${index}`}
-                                            className={clsx({
-                                                [classes.hoverItem]: isHoverItem,
-                                                [classes.selectedItem]: beSelectedItem && !isHoverItem,
-                                            })}
+                                            selected={isHoverItem}
+                                            // className={clsx({
+                                            //     [classes.hoverItem]: isHoverItem,
+                                            //     [classes.selectedItem]: beSelectedItem && !isHoverItem,
+                                            // })}
                                             {...combobox.getItemProps({ index })}
                                             onClick={event => {
                                                 combobox.closeMenu()
@@ -193,12 +200,11 @@ const MyComboboxView = ({
                                         >
                                             <ListItemText
                                                 primary={createTextFromItem(item, searchKeys)}
-                                                // classes={{
-                                                //     primary: clsx({
-                                                //         [classes.selectedItemText]:
-                                                //             beSelectedItem
-                                                //     }),
-                                                // }}
+                                                classes={{
+                                                    primary: clsx({
+                                                        [classes.selectedItemText]: beSelectedItem,
+                                                    }),
+                                                }}
                                             />
                                         </ListItem>
                                     </CellMeasurer>
@@ -212,8 +218,8 @@ const MyComboboxView = ({
     )
 }
 
-const MyCombobox = ({ items = [], uniqueKey = 'value', searchKeys = ['name'], ...other }) => {
-    const myCombobox = useMyCombobox({ items, uniqueKey, searchKeys })
+const MyCombobox = ({ name, validate, items = [], uniqueKey = 'value', searchKeys = ['name'], ...other }) => {
+    const myCombobox = useMyCombobox({ name, validate, items, uniqueKey, searchKeys })
     return <MyComboboxView {...myCombobox} {...{ uniqueKey, searchKeys }} {...other} />
 }
 

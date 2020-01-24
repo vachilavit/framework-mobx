@@ -1,12 +1,18 @@
-import { useState, useRef } from 'react'
+import { useState, useEffect } from 'react'
+import { useField } from 'react-final-form-hooks'
+import { useFormConsumer } from 'contexts/FormContext'
 import { useCombobox } from 'downshift'
 
-const useMyCombobox = ({ items, uniqueKey, searchKeys }) => {
+const useMyCombobox = ({ name, validate, items, uniqueKey, searchKeys }) => {
+    const formConsumer = useFormConsumer()
+    const field = useField(name, formConsumer.form, validate)
     const [inputItems, setInputItems] = useState(items)
     const [inputHighlightedIndex, setInputHighlightedIndex] = useState(-1)
     const [scrollIndex, setScrollIndex] = useState(0)
     // const listRef = useRef()
+
     const combobox = useCombobox({
+        selectedItem: items.filter(item => field.input.value === item[uniqueKey])?.[0],
         items: inputItems,
         // itemToString: item => searchKeys.filter(searchKey => !!item[searchKey]).map(searchKey => item[searchKey])?.[0],
         highlightedIndex: inputHighlightedIndex,
@@ -42,7 +48,14 @@ const useMyCombobox = ({ items, uniqueKey, searchKeys }) => {
                 setInputHighlightedIndex(highlightedIndex)
             }
         },
+        onSelectedItemChange: ({ selectedItem }) => {
+            field.input.onChange(selectedItem[uniqueKey])
+        },
     })
+
+    useEffect(() => {
+        formConsumer.form.mutators.setFieldData(name, { ...combobox.selectedItem })
+    }, [combobox.selectedItem])
 
     const onKeyDownInput = event => {
         const { key } = event
@@ -64,6 +77,7 @@ const useMyCombobox = ({ items, uniqueKey, searchKeys }) => {
             case 'Enter':
                 event.preventDefault()
                 combobox.selectItem(inputItems[combobox.highlightedIndex])
+                setScrollIndex(nextIndex)
                 combobox.closeMenu()
                 break
             default:

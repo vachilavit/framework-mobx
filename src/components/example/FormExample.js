@@ -5,7 +5,7 @@ import MyTextField from 'components/common/MyTextField'
 import MyCombobox from 'components/common/MyCombobox'
 import { composeValidators, required } from 'utils/formValidate'
 
-let FormExampleView = ({ state, form, form2 }) => {
+let FormExampleView = ({ typeSubmitRef, form, form2 }) => {
     return (
         <FormProvider form={form.form}>
             <div style={{ width: 300 }}>
@@ -276,7 +276,7 @@ let FormExampleView = ({ state, form, form2 }) => {
                 />
                 <button
                     onClick={event => {
-                        state.typeSubmit = 'submit1'
+                        typeSubmitRef.current = 'submit1'
                         form.handleSubmit(event)
                     }}
                 >
@@ -284,7 +284,7 @@ let FormExampleView = ({ state, form, form2 }) => {
                 </button>
                 <button
                     onClick={event => {
-                        state.typeSubmit = 'submit2'
+                        typeSubmitRef.current = 'submit2'
                         form.handleSubmit(event)
                     }}
                 >
@@ -297,7 +297,7 @@ let FormExampleView = ({ state, form, form2 }) => {
                     <MyTextField name='test4' label='test4' />
                     <button
                         onClick={event => {
-                            state.typeSubmit = 'submit1'
+                            typeSubmitRef.current = 'submit1'
                             form2.handleSubmit(event)
                         }}
                     >
@@ -305,7 +305,7 @@ let FormExampleView = ({ state, form, form2 }) => {
                     </button>
                     <button
                         onClick={event => {
-                            state.typeSubmit = 'submit2'
+                            typeSubmitRef.current = 'submit2'
                             form2.handleSubmit(event)
                         }}
                     >
