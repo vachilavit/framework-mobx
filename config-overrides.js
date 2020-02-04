@@ -1,4 +1,11 @@
-const { override, addDecoratorsLegacy, disableEsLint } = require('customize-cra')
+const {
+    override,
+    addDecoratorsLegacy,
+    disableEsLint,
+    addWebpackModuleRule,
+    addWebpackPlugin,
+} = require('customize-cra')
+const WorkerPlugin = require('worker-plugin')
 
 module.exports = override(
     addDecoratorsLegacy(),
@@ -11,4 +18,6 @@ module.exports = override(
     //     camel2DashComponentName: false,
     // }),
     disableEsLint(),
+    // addWebpackModuleRule({ test: /\.worker\.js$/, use: { loader: 'worker-loader' } }),
+    addWebpackPlugin(new WorkerPlugin()),
 )
